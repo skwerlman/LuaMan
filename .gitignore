@@ -1,16 +1,16 @@
-*.class
-
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
-
-# Eclipse
+# Standard .gitignore
+## Ignore Eclipse project files
 .project
 .buildpath
 
-# Package Files #
-*.jar
-*.war
-*.ear
+## Ignore OSX Files
+.DS_Store
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
+## Ignore TODO lists
+TODO.*
+TODO
+
+# Project-specific .gitignore
+## Generated Files
+.man/
+*.man
