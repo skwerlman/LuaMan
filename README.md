@@ -8,7 +8,7 @@ A basic man page reader for ComputerCraft, inspired by man-db.
 LuaMan pages are stored in the JSON format, because it allows for both easy manual and automatic generation.
 
 LuaMan is a powerful documentation system because it allows for complex embedded code inserted at _tag-points_.
-A _tag-point_ is at the start of a line, begins with '@', and is exactly three characters long. They can be used to set the color of a line, generate a TOC, or do pretty much anything else.\
+A _tag-point_ is at the start of a line, begins with '@', and is exactly three characters long. They can be used to set the color of a line, generate a TOC, or do pretty much anything else.
 
 ####Example Document
 A well-formatted example of a LuaMan page is at https://github.com/skwerlman/LuaGRUB/blob/master/lgrub.sys/doc/dev.JSON.
