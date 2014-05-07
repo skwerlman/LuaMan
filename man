@@ -1,0 +1,225 @@
+--[[
+
+    LuaMan 0.0.1 - A documentation reader for ComputerCraft
+    Copyright (C) 2014  Skwerlman
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+]]
+
+local version = '0.0.1'
+
+print('LuaMan version '..version)
+print('Copyright (C) 2014  Skwerlman')
+
+local tArg = {...} -- get commandline input
+
+local function loadAPI(path) -- Thanks to theoriginalbit for this loadAPI replacer
+  local name = string.match(GRUBRoot.FS.getName(path), '(%a+)%.?.-')
+  local env = setmetatable({}, { __index = _G }) -- passes a ref of the shell api to the loaded api
+  local func, err = loadfile(path)
+  if not func then
+    return false, printError(err)
+  end
+  setfenv(func, env)
+  func()
+  local api = {}
+  for k,v in pairs(env) do
+    api[k] = v
+  end
+  _G[name] = api
+  return true
+end
+
+local function showVersion()
+  print("This program comes with ABSOLUTELY NO WARRANTY; for details use `man --warranty'.")
+  print("This is free software, and you are welcome to redistribute it")
+  print("under certain conditions; see `LICENSE' for details.")
+end
+
+local function showWarranty()
+  print('THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY')
+  print('APPLICABLE LAW.  EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT')
+  print('HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM "AS IS" WITHOUT WARRANTY')
+  print('OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO,')
+  print('THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR')
+  print('PURPOSE.  THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM')
+  print('IS WITH YOU.  SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF')
+  print('ALL NECESSARY SERVICING, REPAIR OR CORRECTION.')
+end
+
+local function showUsage()
+  showVersion()
+  -- TODO add usage info
+end
+
+local function tryResolvePath(i, ext)
+  if not i:byte(#i - 4) == 46 then
+    i = i..ext
+  end
+  i = shell.resolve('.man/'..i)
+  if not fs.exists(i) then
+    return false, 'ERROR: '..i..':No such man page. Use man --list for a list of available pages.'
+  end
+  if fs.isDir(i) then
+    return false, 'ERROR: '..i..' is a directory; perhaps it was installed incorrectly?'
+  end
+  return i
+end
+
+local function resolvePath(i)
+  local errs = {}
+  local ext = {
+    '.man',
+    '.json',
+    '.JSON',
+    ''
+  }
+  for _,v in ipairs(ext) do
+    local ok, err = tryResolvePath(i, v)
+    if ok then
+      return ok
+    else
+      errs[#errs+1] = {i, err} -- only returns errors if all tries fail, but we still want a copy of each error
+    end
+  end
+  return false, errs
+end
+
+local function listPages()
+  pages = fs.list('.man')
+  if not pages or pages == {} then -- I can't remember what fs.list() returns...
+    return false, 'No pages yet.'
+  end
+  for k,v in ipairs(pages) do
+    pages[k] = v:sub(6) -- strip path
+  end
+  return pages
+end
+
+local function showPages()
+  showVersion()
+  local max, bar, sep, tocFrame, spacer, _x2, _y2
+  local _x, _y = term.getCursorPos()
+  local toc = listPages()
+  max = 0
+  for _,v in pairs(toc) do
+    max = math.max(v:len() + 2, max)
+  end
+  bar = string.rep('-', max)
+  spacer = string.rep(' ', max)
+  sep = '+'..bar..'+'..'\n'
+  tocFrame = sep
+  for _,_ in pairs(toc) do
+    tocFrame = tocFrame..'|'..spacer..'|'..'\n'
+  end
+  tocFrame = tocFrame..sep
+  if term.isColor() then
+    local bg, fg, fgb
+    bg = colors.black 
+    fg = colors.yellow
+    fgb = colors.white
+    term.setBackgroundColor(bg)
+    term.setTextColor(fgb)
+  end
+  print(l)
+  _x2, _y2 = term.getCursorPos()
+  if term.isColor() then
+    term.setTextColor(fg)
+  end
+  local i = 0
+  for _,v in pairs(toc) do
+    i = i + 1
+    setCursorPos(_x + 1, _y + i)
+    print(v)
+  end
+  if term.isColor() then
+    term.setTextColor(fgb)
+  end
+  term.setCursorPos(_x2, _y2)
+end
+
+function parseArgs()
+  --do things
+end
+if not JSON then
+  loadAPI('api/JSON.lua')
+end
+if not man then
+  loadAPI('api/man.lua')
+end
+if not Drawing then
+  loadAPI('api/Drawing.lua')
+end
+
+local flags, targetFile = parseArgs()
+
+if not fs.isDir('.man') then -- new install
+  fs.makeDir('.man')
+end
+
+if flags.version then
+  return showVersion()
+end
+
+if flags.warranty then
+  return showWarranty()
+end
+
+if flags.help then
+  return showUsage()
+end
+
+if flags.install then
+  print('Adding '..targetFile..' to the man pages dir...')
+  local ok, errs = man.install(targetFile)
+  if not ok then
+    printError('Error(s) were encountered during the install!')
+    printError('The following error(s) are relevent to the file\'s old location:')
+    if type( errs ) == 'table' then
+      for k,v in pairs(errs) do
+        printError('['..k..']: '..v)
+      end
+    elseif errs ~= nil
+      printError('[1]: '..tostring(errs))
+    else
+      printError('One or more unknown errors were encountered during the install!')
+    end
+    return
+  end
+  ok, errs = resolvePath(errs)
+  if not ok then
+    printError('Error(s) were encountered after the install!')
+    printError('The following error(s) are relevent to the file\'s new location:')
+    if type( errs ) == 'table' then
+      for k,v in pairs(errs) do
+        printError('['..k..']: '..v)
+      end
+    elseif errs ~= nil
+      printError('[1]: '..tostring(errs))
+    else
+      printError('One or more unknown errors were encountered during the install!')
+    end
+  end
+  return
+end
+
+if flags.read then
+  local ok, err = listPages()
+  if not ok then -- .man is empty
+    printError(err)
+    return
+  end
+  --do things
+end
