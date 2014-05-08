@@ -52,7 +52,7 @@ Here is an example of a well-formed LuaMan JSON. It's contents explain what is g
             "Tags can only go at the start of a line.",
             "@CYYellow text",
             " @CYThis text is not yellow, because the @ is not the first character.",
-            " ",
+            " ", // all lines must contain at least one character
             "The tags used in this example JSON only have basic code, but any valid Lua chunk will work.",
             "Tag code can even access the contents of fields in the table. More on this in the next section."
         ],
