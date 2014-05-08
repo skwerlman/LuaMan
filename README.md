@@ -10,9 +10,8 @@ LuaMan pages are stored in the JSON format, because it allows for both easy manu
 LuaMan is a powerful docmentation system because it allows for complex embedded code inserted at _tag-points_.
 A _tag-point_ is at the start of a line, begins with '@', and is exactly three characters long. They can be used to set the color of a line, generate a TOC, or do pretty much anything else.
 
-####Example docment
-A well-formed example of a LuaMan page is at https://github.com/skwerlman/LuaGRUB/blob/master/lgrub.sys/doc/dev.JSON.
-This page includes tags for setting text color as well as a tag ('TC') that generates an entire TOC in the middle of being displayed.
+####Man Page Format
+See https://github.com/skwerlman/LuaMan/tree/format
 
 ####Current Features
 - None! I'm just starting now!
