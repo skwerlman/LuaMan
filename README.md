@@ -2,6 +2,8 @@ LuaMan Man Page Format v2.0.0
 ==============
 Here is an example of a well-formed LuaMan JSON. It's contents explain what is going on.
 
+_This JSON is under construction; please excuse the mess._
+
 ```JSON
 {
     "name": "LuaGRUB 1.0.1: Developer's Notes",
