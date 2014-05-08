@@ -1,0 +1,16 @@
+# Standard .gitignore
+## Ignore Eclipse project files
+.project
+.buildpath
+
+## Ignore OSX Files
+.DS_Store
+
+## Ignore TODO lists
+TODO.*
+TODO
+
+# Project-specific .gitignore
+## Generated Files
+.man/
+*.man
