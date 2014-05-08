@@ -150,19 +150,35 @@ local function showPages()
   term.setCursorPos(_x2, _y2)
 end
 
-function parseArgs()
+local function handleError(err, when, what) -- only call this from toplevel code to avoid multiple catches
+  printError('Error(s) were encountered: '..tostring(when))
+  printError('The following error(s) are relevent to: '..tostring(what))
+  if type( errs ) == 'table' then
+    for k,v in pairs(errs) do
+      printError('['..k..']: '..v)
+    end
+  elseif errs ~= nil
+    printError('[1]: '..tostring(errs))
+  else
+    printError('[1]: Unknown error ('..tostring(errs)..')')
+  end
+end
+
+local function parseArgs()
   --do things
 end
+
 if not JSON then
   loadAPI('api/JSON.lua')
 end
 if not man then
   loadAPI('api/man.lua')
 end
+--[[ -- disabled pending usage
 if not Drawing then
   loadAPI('api/Drawing.lua')
 end
-
+]]
 local flags, targetFile = parseArgs()
 
 if not fs.isDir('.man') then -- new install
@@ -184,42 +200,20 @@ end
 if flags.install then
   print('Adding '..targetFile..' to the man pages dir...')
   local ok, errs = man.install(targetFile)
-  if not ok then
-    printError('Error(s) were encountered during the install!')
-    printError('The following error(s) are relevent to the file\'s old location:')
-    if type( errs ) == 'table' then
-      for k,v in pairs(errs) do
-        printError('['..k..']: '..v)
-      end
-    elseif errs ~= nil
-      printError('[1]: '..tostring(errs))
-    else
-      printError('One or more unknown errors were encountered during the install!')
-    end
-    return
+  if not ok then -- break early; avoid error cascades
+    return handleError(errs, 'during the install', 'the file\'s old location')
   end
   ok, errs = resolvePath(errs)
   if not ok then
-    printError('Error(s) were encountered after the install!')
-    printError('The following error(s) are relevent to the file\'s new location:')
-    if type( errs ) == 'table' then
-      for k,v in pairs(errs) do
-        printError('['..k..']: '..v)
-      end
-    elseif errs ~= nil
-      printError('[1]: '..tostring(errs))
-    else
-      printError('One or more unknown errors were encountered during the install!')
-    end
+    return handleError(errs, 'after the install', 'the file\'s new location')
   end
-  return
+  return print('Install successful.')
 end
 
 if flags.read then
   local ok, err = listPages()
   if not ok then -- .man is empty
-    printError(err)
-    return
+    return handleError(err, 'while finding the specified file', 'the location of the man file')
   end
   --do things
 end
