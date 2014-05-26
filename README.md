@@ -18,7 +18,7 @@ _This JSON is under construction; please excuse the mess._
         "H": "if term.isColor() then term.setTextColor(colors.white) end"
     },
     "contents": {
-        "toc00": "Table of contents",
+        "toc": "Table of contents",
         "toc01": "LuaMan",
         "toc02": "Tags Part 1",
         "toc03": "Tags Part 2",
